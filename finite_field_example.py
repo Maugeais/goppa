@@ -8,7 +8,7 @@ Created on Thu Sep  7 09:43:16 2023
 
 import FF
 
-F = FF.field(5**6, 5)
+F = FF.field(5**5, 5)
 alpha = F.var
 
 

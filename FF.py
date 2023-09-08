@@ -6,236 +6,41 @@ Created on Wed Sep  6 13:12:08 2023
 @author: maugeais
 """
 
+from polZnZ import polZnZ, gcd, bezout
 import numpy as np
-
-class pol:
-    """ Class des polynomes, reprise de rfp2 """
-    def __init__(self, coef, car = 2):
-        
-        if isinstance(coef, str) :
-            """ Ce serait bien de faire ça ..."""
-            pass
-        elif isinstance(coef, int) :
-            coef = [coef]
-        
-        self.car = car            
-        self.coef = np.mod(np.array(coef, dtype = int), self.car)
-        I = np.where(self.coef != 0)[0]
-        
-        if len(I) == 0 :
-            self.deg = -1
-            self.coef = np.array([0], dtype = int)
-        else :
-            self.deg=I[-1]
-            self.coef = self.coef[:self.deg+1]
-        
-
-
-    # Evaluation a l'aide du schema de Horner
-    def eval(self, x):
-        y = self.coef[self.deg]+0*x
-        for i in range(self.deg-1, -1, -1):
-            y = y*x+self.coef[i]
-
-        return(y)
-
-    # Affichage
-    def __repr__(self, var = 'X'):
-        
-        if self.deg == -1 :
-            return('0')
-
-        if (self.deg == 0):
-            poly = str(self.coef[0])
-            return(poly)
-
-        poly = ''
-
-        for i in range(0, self.deg+1):
-            if self.coef[i] != 0 :
-                if self.coef[i] != 1 :
-                    poly += str(self.coef[i])
-                    
-                elif i == 0 :
-                    poly += '1'
-                    
-                if i == 1 :
-                    poly += var
-                    
-                if i > 1 :
-                    poly = poly+var+'**'+str(i)
-
-                poly += '+'
-
-        return(poly[:-1])
-
-    # Addition de polynomes
-    def __add__(self, P):
-        
-        if isinstance(P, int) :
-            P = pol([P], self.car)
-            
-        Q = np.zeros(max(self.deg, P.deg)+1, dtype = int)
-        for i in range(self.deg+1):
-            Q[i] = self.coef[i]
-
-        for i in range(P.deg+1):
-            Q[i] += P.coef[i]
-
-        return(pol(Q, self.car))
-    
-    def __radd__(self, P) :
-        return(self+pol(P, self.car))
-    
-
-    def __sub__(self, P):
-        
-        if isinstance(P, int) :
-            P = pol([P], self.car)
-            
-        Q = np.zeros(max(self.deg, P.deg)+1, dtype = int)
-        for i in range(self.deg+1):
-            Q[i] = self.coef[i]
-
-        for i in range(P.deg+1):
-            Q[i] -= P.coef[i]
-
-        return(pol(Q, self.car))
-    
-    def __rsub__(self, P) :
-        return((-1)*self+pol(P, self.car))
-    
-    def __mul__(self, P):
-        
-        if self.deg + P.deg < 0 :
-            return(pol([0], self.car))
-        Q = np.zeros(self.deg+P.deg+1, dtype = int)
-        
-        for i in range(self.deg+1) :
-            for j in range(P.deg+1) :
-                Q[i+j] += self.coef[i]*P.coef[j]
-        
-        return(pol(Q, self.car))
-    
-    def __pow__(self, n) :
-        
-        if n == 0 :
-            return(pol([1], self.car))
-        
-        Q = self
-        
-        for i in range(n-1) :
-            Q = Q*self
-            
-        return(Q)
-    
-    def __truediv__(self, B):
-        
-        
-        if isinstance(B, int) :
-            B = pol([B], self.car)
-        
-        if (B.deg < 0) :
-            raise Exception("Division par zéro")
-        
-        
-        
-        R = pol(self.coef, self.car)
-        Q = pol([0], self.car)
-        
-        while R.deg >= B.deg :
-                        
-            # Calcule l'inverse de B.coef[-1]
-            _, u, v = bezoutint(B.coef[-1], self.car)
-            
-            Q = Q + (R.coef[-1]*u)*pol([0, 1], self.car)**(R.deg-B.deg)
-            R = self-Q*B
- 
-        return(Q, R)
-    
-    def __mod__(self, P) :
-        
-        Q, R = self/P
-        return(R)
-        
-    # Multiplication par une constante
-    def __rmul__(self, l):
-        return(self*pol(l, self.car))
-    
-    
-    def __eq__(self, P) :
-        
-        if isinstance(P, int) :
-            P = pol([P], self.car)
-        
-        if (self.deg != P.deg) :
-            return(False)
-                
-        return(all(self.coef == P.coef))
-    
-    def __ne__(self, other):
-       return not self.__eq__(other)
-        
-        
-    
-def gcd(a, b) :
-    
-             
-    while (b.deg >= 0) :
-
-        r = a % b
-                
-        a = b
-        b = r
-        
-    return(a)
-
-def bezoutint(a, b) :
-    u0, u1, v0, v1 = 1, 0, 0, 1
-    
-    while (b != 0) :
-        
-        q = a//b
-        r = a % b
-        
-        a = b
-        b = r
-        
-        u0, u1 = u1, u0-u1*q
-        v0, v1 = v1, v0-v1*q
-        
-    return(a, u0, v0)
-
-def bezout(a, b) :
-    u0, u1, v0, v1 = pol(1, a.car), pol(0, a.car), pol(0, a.car), pol(1, a.car)
-    
-    while (b.deg >= 0) :
-        
-        q, r = a/b
-                
-        a = b
-        b = r
-        
-        u0, u1 = u1, u0-u1*q
-        v0, v1 = v1, v0-v1*q
-        
-    return(a, u0, v0)
     
     
 class field:
-    """ Class des polynomes, reprise de rfp2 """
     def __init__(self, card, car = 2, varName = 'α'):
+        """
+        
+
+        Parameters
+        ----------
+        card : TYPE
+            DESCRIPTION.
+        car : TYPE, optional
+            DESCRIPTION. The default is 2.
+        varName : TYPE, optional
+            DESCRIPTION. The default is 'α'.
+
+        Returns
+        -------
+        bool
+            DESCRIPTION.
+
+        """
         
         self.card = card
         self.car = car 
         self.n = int(np.log(card)/np.log(car))
         
         self.varName = varName
-        X = pol([0, 1], self.car)
+        X = polZnZ([0, 1], self.car)
                 
         # Génération aléatoire de polynôme
         refs = []
-        for k in range(1, self.n-1) :
+        for k in range(self.n-2, self.n-1) :
             
             refs.append(X**(car**k)-X)
                         
@@ -254,7 +59,7 @@ class field:
             coef = np.random.randint(0, self.car, self.n+1)
             coef[0] = coef[-1] = 1
             
-            P = pol(coef, self.car)
+            P = polZnZ(coef, self.car)
             
             # Et on vérifie que la divisibilité est bonne
 
@@ -270,21 +75,21 @@ class field:
 
         
 class GF:
-     """ Class des polynomes, reprise de rfp2 """
+     """ Definition dese éléments du corps """
      def __init__(self, coef, F):
         
         self.F = F
                 
         if isinstance(coef, list) :
-            self.val = pol(coef, F.car) % F.gen
+            self.val = polZnZ(coef, F.car) % F.gen
             
         elif isinstance(coef, int) :
-            self.val = pol(coef, F.car) 
+            self.val = polZnZ(coef, F.car) 
             
         elif isinstance(coef, np.ndarray) :
-            self.val = pol(coef, F.car) % F.gen            
+            self.val = polZnZ(coef, F.car) % F.gen            
             
-        elif isinstance(coef, pol) :
+        elif isinstance(coef, polZnZ) :
             self.val = coef % F.gen
             
         else :
@@ -313,16 +118,79 @@ class GF:
          if isinstance(P, int) :
              P = GF([P], self.F)
          return(GF((self.val-P.val)%self.F.gen, self.F))
+     
+     def __rsub__(self, P):
+        
+         return(-P+self)
+     
+     def __neg__(self): 
+         """
+         Négation de l'élément courant
+
+         Returns
+         -------
+         TYPE
+             DESCRIPTION.
+
+         """
+                  
+         return GF(-self.coef, self.car)    
 
      
      def __mul__(self, P):
+         """
+         Multiplication de l'élément courant par un autre
+
+         Parameters
+         ----------
+         P : TYPE
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """
          if isinstance(P, int) :
              P = GF([P], self.F)
+         elif isinstance(P, GF) :
+             pass
+         else :
+             return(P*self)
              
          return(GF((self.val*P.val)%self.F.gen, self.F))
+     
+     def __rmul__(self, l):
+         """
+         Multiplication d'un entier par l'élément courant
+
+         Parameters
+         ----------
+         l : TYPE
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """ 
+         return(self*l)
+        
 
      
      def __pow__(self, n) :
+         """ À refaire avec une exponentiation rapide
+
+         Parameters
+         ----------
+         n : TYPE
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """
          if n >= 0 :
              return(GF((self.val**n)%self.F.gen, self.F))
          else :
@@ -330,6 +198,24 @@ class GF:
 
 
      def __truediv__(self, B):
+         """
+         Division de l'élément courant par un autre
+
+         Parameters
+         ----------
+         B : TYPE
+             DESCRIPTION.
+
+         Raises
+         ------
+         Exception
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """
          
          if isinstance(B, int) :
              B = GF([B], self.F)
@@ -342,25 +228,44 @@ class GF:
          if (a.deg > 0) :
              print('toto', B.val, self.F.gen, gcd(B.val, self.F.gen))
                   
-         _, r, s = bezoutint(a.coef[0], self.F.car)   
-                 
-         for i in range(u.deg+1) :
-             u.coef[i] = (u.coef[i]*r)%self.F.car
      
          return(GF((self.val*u) % self.F.gen, self.F))
   
      
      def __rtruediv__(self, B) :
+         """
+         Division d'un entier par l'élément courant
+
+         Parameters
+         ----------
+         B : TYPE
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """
          
          B = GF(B, self.F)
          
          return(B/self)
      
-     # Multiplication par une constante
-     def __rmul__(self, l):
-         return(self*l)
      
      def __eq__(self, P) :
+         """
+         Test d'égalité
+
+         Parameters
+         ----------
+         P : TYPE
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """
          
          if isinstance(P, int) :
              P = GF([P], self.F)
@@ -368,30 +273,32 @@ class GF:
          return(self.val == P.val)
          
      def __ne__(self, other):
+         """
+         Test de différence
+
+         Parameters
+         ----------
+         other : TYPE
+             DESCRIPTION.
+
+         Returns
+         -------
+         TYPE
+             DESCRIPTION.
+
+         """
          
          return not self.__eq__(other)
+     
+     
          
         
 if __name__ == '__main__' : 
 
-    X = pol([0, 1], car = 11)
     
-    P = (2+X+3*X**3+2*X**8)
-    
-    Q = (1+X+3*X**2)
-    
-    print(P+P+3*P)
-    
-    print(P-2*Q**4)
-    
-    A, B = P / Q
-    
-    print(P-(A*Q+B))
-    
-    
-    F = field(5**3, 5)
+    F = field(5**5, 5)
     alpha = F.var
-    P = (2+alpha+2*alpha**3)
+    P = (2+alpha+2*alpha**3+1*alpha**4)
     
     Q = 1/P
-    print('hola', Q*P)
+    print('(1/P)*P = ', Q*P)
