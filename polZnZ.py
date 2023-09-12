@@ -7,6 +7,7 @@ Created on Fri Sep  8 08:08:05 2023
 """
 
 import numpy as np
+import sympy
 
 class polZnZ:
     def __init__(self, coef, car = 2):
@@ -367,6 +368,53 @@ class polZnZ:
 
         """
         return polZnZ(-self.coef, self.car)
+    
+    def powMod(self, n, g) :
+        """
+        
+
+        Parameters
+        ----------
+        P : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        if n == 0 :
+            return(polZnZ([1], self.car))
+        
+        a = 1
+        b = self
+       
+        for i in reversed(bin(n)[2:]) :
+            if i == '1' :
+                a = (a*b) %g
+                
+            b = (b*b) % g
+       
+        return(a) 
+    
+    def isIrred(self) :
+        N = sympy.primefactors(self.deg)
+        X = polZnZ([0, 1], self.car)
+        
+        for n in N :
+            
+            h = X.powMod(self.car**(self.deg//n), self)-X
+    
+            if gcd(self, h).deg > 0 :
+                return False
+                
+        g = X.powMod(self.car**(self.deg), self)-X
+    
+        
+        if (g % self).deg < 0 :
+            return(True)
+        
+        return(False)
         
     
 def gcd(a, b) :
@@ -473,22 +521,24 @@ def bezout(a, b) :
 
 if __name__ == '__main__' : 
 
-    X = polZnZ([0, 1], car = 11)
+    X = polZnZ([0, 1], car = 2)
     
     P = (2+X+3*X**3+2*X**8)
+    P = 1+X+X**2
     
-    Q = (1+X+3*X**2)
+    # Q = (1+X+3*X**2)
     
-    print(P+P+3*P)
+    # print(P+P+3*P)
     
-    print(P-2*Q**4)
+    # print(P-2*Q**4)
     
-    A, B = P / Q
+    # A, B = P / Q
     
-    print(P-(A*Q+B))
+    # print(P-(A*Q+B))
     
-    a, u, v = bezout(P, Q)
-    print(a, '=', u*P+v*Q)
+    # a, u, v = bezout(P, Q)
+    # print(a, '=', u*P+v*Q)
     
     
+    print(P.isIrred())
     
