@@ -6,7 +6,7 @@ Created on Wed Sep  6 13:12:08 2023
 @author: maugeais
 """
 
-from polZnZ import polZnZ, gcd, bezout
+from .polynomials_prime_field import polZnZ, gcd, bezout
 import numpy as np
 import sympy
     
@@ -14,16 +14,21 @@ import sympy
 class field:
     def __init__(self, car = 2, n = 4, pol = None, varName = 'α'):
         """
-        
+        Definition of the field
 
         Parameters
         ----------
-        card : TYPE
-            DESCRIPTION.
-        car : TYPE, optional
-            DESCRIPTION. The default is 2.
-        varName : TYPE, optional
-            DESCRIPTION. The default is 'α'.
+        car : int
+            characteristic of the field
+        n : int, optional
+            degree as an extension over the prime field
+            car**n is the cardinal of the field
+        pol : list of int or polZnZ, optional
+            - if given, irreducible polynomial of degre n defining
+            the field
+            - if not given, an irreducible polynomial of degree n is constructed
+        varName : character, optional
+            name of the generator of the field. The default is 'α'.
 
         Returns
         -------
@@ -39,29 +44,13 @@ class field:
         
         self.varName = varName
         self.__divisors = []
-        X = polZnZ([0, 1], self.car)
-    
+
         if pol != None :
             
                 self.gen = polZnZ(pol, self.car)
                 self.var = GF([0, 1], self)
-                
-                return
-        # Génération aléatoire de polynôme
-        # refs = []
-        # for k in range(self.dim-2, self.dim-1) :
-            
-        #     refs.append(X**(car**k)-X)
-                        
-        # def isIrred(P) :
-            
-        #     for ref in refs :
-        #         a = gcd(ref, P)
-                
-        #         if a.deg > 0 :
-        #             return False
-        #     return(True)
-                
+
+                return              
         
         while True :
             
@@ -70,8 +59,6 @@ class field:
             
             P = polZnZ(coef, self.car)
             
-            # Et on vérifie que la divisibilité est bonne
-
             if P.isIrred() :
                 break
         
@@ -79,10 +66,26 @@ class field:
         self.var = GF([0, 1], self)
         
     def rand(self) :
+        """
+        Generate a random element of the current field
+
+        Returns
+        -------
+        Element of the current field
+
+        """
                 
         return(GF(np.random.randint(0, self.car, self.dim), self))
     
     def elements(self) :
+        """
+        Produces a list of all the elements of the current field
+
+        Returns
+        -------
+        List
+
+        """
         
         _elements = [GF([0], self)]
         
@@ -111,34 +114,75 @@ class field:
         
 class GF:
      """ Definition dese éléments du corps """
+    
      def __init__(self, coef, F):
+         """
+         
+
+         Parameters
+         ----------
+         coef : TYPE
+             DESCRIPTION.
+         F : TYPE
+             DESCRIPTION.
+
+         Raises
+         ------
+         Exception
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """
         
-        self.F = F
+         self.F = F
                 
-        if isinstance(coef, list) :
-            self.val = polZnZ(coef, F.car) % F.gen
+         if isinstance(coef, list) :
+             self.val = polZnZ(coef, F.car) % F.gen
             
-        elif isinstance(coef, int) :
-            self.val = polZnZ(coef, F.car) 
+         elif isinstance(coef, int) :
+             self.val = polZnZ(coef, F.car) 
             
-        elif isinstance(coef, np.ndarray) :
-            self.val = polZnZ(coef, F.car) % F.gen            
+         elif isinstance(coef, np.ndarray) :
+             self.val = polZnZ(coef, F.car) % F.gen            
             
-        elif isinstance(coef, polZnZ) :
-            self.val = coef % F.gen
+         elif isinstance(coef, polZnZ) :
+             self.val = coef % F.gen
             
-        else :
-            raise Exception("Type non reconnu pour la définition d'un élément GF")
+         else :
+             raise Exception("Type non reconnu pour la définition d'un élément GF")
         
         
-     # Affichage
      def __repr__(self):
+         """
+         Display the element
+
+         Returns
+         -------
+         None.
+
+         """
          
          return(self.val.__repr__(var = self.F.varName))
 
 
      # Addition de polynomes
      def __add__(self, P):
+         """
+         
+
+         Parameters
+         ----------
+         P : TYPE
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """
          
          if isinstance(P, int) :
              P = GF([P], self.F)
@@ -146,35 +190,25 @@ class GF:
          return(GF((self.val+P.val)%self.F.gen, self.F))
      
      def __radd__(self, P) :
+         """
+         
+
+         Parameters
+         ----------
+         P : TYPE
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """
          return(GF((P+self.val)%self.F.gen, self.F))
      
 
      def __sub__(self, P):
-         if isinstance(P, int) :
-             P = GF([P], self.F)
-         return(GF((self.val-P.val)%self.F.gen, self.F))
-     
-     def __rsub__(self, P):
-        
-         return(-P+self)
-     
-     def __neg__(self): 
          """
-         Négation de l'élément courant
-
-         Returns
-         -------
-         TYPE
-             DESCRIPTION.
-
-         """
-                  
-         return GF(-self.coef, self.car)    
-
-     
-     def __mul__(self, P):
-         """
-         Multiplication de l'élément courant par un autre
+         
 
          Parameters
          ----------
@@ -188,6 +222,54 @@ class GF:
          """
          if isinstance(P, int) :
              P = GF([P], self.F)
+         return(GF((self.val-P.val)%self.F.gen, self.F))
+     
+     def __rsub__(self, P):
+         """
+         
+
+         Parameters
+         ----------
+         P : TYPE
+             DESCRIPTION.
+
+         Returns
+         -------
+         None.
+
+         """
+        
+         return(-P+self)
+     
+     def __neg__(self): 
+         """
+         Opposite of the current element
+
+         Returns
+         -------
+         TYPE
+             DESCRIPTION.
+
+         """
+         return GF(-self.coef, self.F)    
+
+     
+     def __mul__(self, P):
+         """
+         Multiplication of the current element by another
+
+         Parameters
+         ----------
+         P : GF
+             DESCRIPTION.
+
+         Returns
+         -------
+         self*P
+
+         """
+         if isinstance(P, int) :
+             P = GF([P], self.F)
          elif isinstance(P, GF) :
              pass
          else :
@@ -197,16 +279,16 @@ class GF:
      
      def __rmul__(self, l):
          """
-         Multiplication d'un entier par l'élément courant
+         Multiplication of an interger by the current element
 
          Parameters
          ----------
-         l : TYPE
+         l : int
              DESCRIPTION.
 
          Returns
          -------
-         None.
+         l*self
 
          """ 
          return(self*l)
@@ -214,16 +296,15 @@ class GF:
 
      
      def __pow__(self, n) :
-         """ À refaire avec une exponentiation rapide
-
+         """ Fast computation of the power of teh current element by n
          Parameters
          ----------
-         n : TYPE
+         n : int
              DESCRIPTION.
 
          Returns
          -------
-         None.
+         self**n
 
          """
          if n >= 0 :
@@ -248,21 +329,21 @@ class GF:
 
      def __truediv__(self, B):
          """
-         Division de l'élément courant par un autre
+         Division of the current element by another one
 
          Parameters
          ----------
-         B : TYPE
+         B : int or GF
              DESCRIPTION.
 
          Raises
          ------
          Exception
-             DESCRIPTION.
+             in case B is zero
 
          Returns
          -------
-         None.
+         GF
 
          """
          
@@ -272,27 +353,23 @@ class GF:
          if B.val.deg < 0 :
              raise Exception("Division par zéro") 
              
-         a, u, v = bezout(B.val, self.F.gen)
-         
-         # if (a.deg > 0) :
-         #     print('toto', B.val, self.F.gen, gcd(B.val, self.F.gen))
-                  
+         _, u, _ = bezout(B.val, self.F.gen)          
      
          return(GF((self.val*u) % self.F.gen, self.F))
   
      
      def __rtruediv__(self, B) :
          """
-         Division d'un entier par l'élément courant
+         Division of an element by the current one
 
          Parameters
          ----------
-         B : TYPE
+         B : int
              DESCRIPTION.
 
          Returns
          -------
-         None.
+         GF
 
          """
          
@@ -303,32 +380,30 @@ class GF:
      
      def __eq__(self, P) :
          """
-         Test d'égalité
+         Test the equality between the current element and P
 
          Parameters
          ----------
-         P : TYPE
+         P : int or GF
              DESCRIPTION.
 
          Returns
          -------
-         None.
+         boolean
 
          """
          
          
          
          if isinstance(P, int) :
-             # if P == 0 :
-             #     P = GF([P], self.F)
-             #     print("test", GF([P], self.F))
+            
              P = GF([P], self.F)
          
          return(self.val == P.val)
          
-     def __ne__(self, other):
+     def __ne__(self, P):
          """
-         Test de différence
+         Test the difference between the current element to P
 
          Parameters
          ----------
@@ -337,20 +412,19 @@ class GF:
 
          Returns
          -------
-         TYPE
-             DESCRIPTION.
+         boolean
 
          """
          
-         return not self.__eq__(other)
+         return not self.__eq__(P)
      
      def order(self):
          """
-         
+         Compute the order of the current element
 
          Returns
          -------
-         None.
+         int
 
          """
          

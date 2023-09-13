@@ -31,10 +31,12 @@ class polZnZ:
             """ Ce serait bien de faire ça ..."""
             pass
         elif isinstance(coef, int) :
-            coef = [coef]
+            coef = np.array([coef], dtype = int)
+        elif isinstance(coef, int) :
+            coef = np.array(coef, dtype = int)
         
         self.car = car            
-        self.coef = np.mod(np.array(coef, dtype = int), self.car)
+        self.coef = np.mod(coef, self.car)
         I = np.where(self.coef != 0)[0]
         
         if len(I) == 0 :
@@ -150,7 +152,10 @@ class polZnZ:
         None.
 
         """
-        return(self+polZnZ(P, self.car))
+        coef = np.copy(self.coef)
+        coef[0] = (coef[0]+P) % self.car
+        
+        return(polZnZ(coef, self.car))
     
 
     def __sub__(self, P):        
@@ -167,8 +172,19 @@ class polZnZ:
         None.
 
         """
+        
+        if isinstance(P, int) :
+            P = polZnZ([P], self.car)
+            
+        Q = np.zeros(max(self.deg, P.deg)+1, dtype = int)
+        for i in range(self.deg+1):
+            Q[i] = self.coef[i]
 
-        return(self+(-1)*P)
+        for i in range(P.deg+1):
+            Q[i] -= P.coef[i]
+
+        return(polZnZ(Q, self.car))
+
     
     def __rsub__(self, P) :
         """
@@ -184,7 +200,11 @@ class polZnZ:
         None.
 
         """
-        return((-1)*self+polZnZ(P, self.car))
+        coef = np.copy(-self.coef)
+        coef[0] = (coef[0]+P) % self.car
+        
+        return(polZnZ(coef, self.car))
+        # return((-1)*self+polZnZ(P, self.car))
     
     def __mul__(self, P):
         """
@@ -285,7 +305,15 @@ class polZnZ:
             # Calcule l'inverse de B.coef[-1]
             _, u, v = bezoutint(P.coef[-1], self.car)
             
-            Q = Q + (R.coef[-1]*u)*polZnZ([0, 1], self.car)**(R.deg-P.deg)
+            if R.deg > P.deg :
+                S = np.zeros(R.deg-P.deg+1, dtype = int)
+                S[-1] = R.coef[-1]*u
+                S = polZnZ(S, self.car)
+            else :
+                S = polZnZ([R.coef[-1]*u], self.car)
+            
+            Q = Q + S
+        
             R = self-Q*P
  
         return(Q, R)
@@ -305,12 +333,25 @@ class polZnZ:
 
         """
         
-        Q, R = self/P
+        _, R = self/P
         return(R)
     
     def __floordiv__(self, P) :
+        """
         
-        Q, R = self/P
+
+        Parameters
+        ----------
+        P : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        
+        Q, _ = self/P
         return(Q)
     
     
@@ -398,6 +439,15 @@ class polZnZ:
         return(a) 
     
     def isIrred(self) :
+        """
+        Test d'irréductibilité de Rabin
+
+        Returns
+        -------
+        bool
+            DESCRIPTION.
+
+        """
         N = sympy.primefactors(self.deg)
         X = polZnZ([0, 1], self.car)
         

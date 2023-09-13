@@ -6,7 +6,7 @@ Created on Thu Sep  7 12:15:04 2023
 @author: maugeais
 """
 
-import FF
+from . import finite_field
 import numpy as np
 import sympy
 
@@ -33,43 +33,67 @@ class pol:
             """ Ce serait bien de faire ça ..."""
             pass
         elif isinstance(coef, int) :
-            self.coef = [FF.GF(coef, field)]
+            self.coef = [finite_field.GF(coef, field)]
 
         elif isinstance(coef, list) or isinstance(coef, np.ndarray):
             for c in coef : 
                 if isinstance(c, int) or isinstance(c, np.int64) :            
-                    self.coef += [FF.GF(int(c), field)]
-                if isinstance(c, FF.GF) :
+                    self.coef += [finite_field.GF(int(c), field)]
+                if isinstance(c, finite_field.GF) :
                     self.coef += [c]
                     
-            self.coef = np.array(self.coef, dtype=FF.GF)
+            self.coef = np.array(self.coef, dtype=finite_field.GF)
             
         self.field = field
                 
         # print(self.coef)
-        # self.coef = np.array([FF.GF(c.val, field) for c in coef], dtype = FF.GF)
+        # self.coef = np.array([finite_field.GF(c.val, field) for c in coef], dtype = finite_field.GF)
         I = np.where(self.coef != 0)[0]
                 
         if len(self.coef) == 0 or len(I) == 0 :
             self.deg = -1
-            self.coef = np.array([FF.GF(0, field)])
+            self.coef = np.array([finite_field.GF(0, field)])
         else :
             self.deg=I[-1]
             self.coef = self.coef[:self.deg+1]
         
 
 
-    # Evaluation a l'aide du schema de Horner
+    
     def __call__(self, x):
+        """
+        Evaluation du polynôme a l'aide du schema de Horner
+
+        Parameters
+        ----------
+        x : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
         y = self.coef[self.deg]+0*x
         for i in range(self.deg-1, -1, -1):
             y = y*x+self.coef[i]
 
         return(y)
 
-    # Affichage
     def __repr__(self, var = 'X'):
-        
+        """
+        Affichage
+
+        Parameters
+        ----------
+        x : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
         if self.deg == -1 :
             return('0')
 
@@ -107,7 +131,7 @@ class pol:
 
     def __add__(self, P):
         """
-            
+        Addition du polynôme courant avec un autre
 
         Parameters
         ----------
@@ -120,10 +144,10 @@ class pol:
 
         """
         
-        if isinstance(P, int) or isinstance(P, FF.GF):
+        if isinstance(P, int) or isinstance(P, finite_field.GF):
             P = pol([P], self.field)
             
-        Q = np.zeros(max(self.deg, P.deg)+1, dtype=FF.GF)
+        Q = np.zeros(max(self.deg, P.deg)+1, dtype=finite_field.GF)
         for i in range(self.deg+1):
             Q[i] = self.coef[i]
 
@@ -197,7 +221,7 @@ class pol:
         None.
 
         """
-        if isinstance(P, FF.GF) :
+        if isinstance(P, finite_field.GF) :
             Q = np.copy(self.coef)
             for i in range(self.deg+1) :
                 Q[i] *= P
@@ -205,7 +229,7 @@ class pol:
         
         if self.deg + P.deg < 0 :
             return(pol([0], self.field))
-        Q = np.zeros(self.deg+P.deg+1, dtype = FF.GF)
+        Q = np.zeros(self.deg+P.deg+1, dtype = finite_field.GF)
         
         for i in range(self.deg+1) :
             for j in range(P.deg+1) :
@@ -260,8 +284,26 @@ class pol:
        
     
     def __truediv__(self, P):
+        """
+        Division : calcul du quotient et du reste
+
+        Parameters
+        ----------
+        P : TYPE
+            DESCRIPTION.
+
+        Raises
+        ------
+        Exception
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
         
-        if isinstance(P, int) or isinstance(P, FF.GF) :
+        if isinstance(P, int) or isinstance(P, finite_field.GF) :
             P = pol([P], self.car)
         
         if (P.deg < 0) :
@@ -270,7 +312,7 @@ class pol:
         
         R = pol(self.coef, self.field)
         Q = pol([0], self.field)
-        X = pol([0, 1], self.field)
+        # X = pol([0, 1], self.field)
         while R.deg >= P.deg :     
                                     
             # Calcule l'inverse de B.coef[-1]
@@ -278,13 +320,13 @@ class pol:
             
             
             if R.deg > P.deg :
-                S = np.zeros(R.deg-P.deg+1, dtype = int)
-                S[-1] = 1
+                S = np.zeros(R.deg-P.deg+1, dtype = finite_field.GF)
+                S[-1] = R.coef[-1]*u
                 S = pol(S, self.field)
             else :
-                S = pol([1], self.field)
+                S = pol([R.coef[-1]*u], self.field)
                 
-            Q = Q + (R.coef[-1]*u)*S #X**(R.deg-P.deg)
+            Q = Q + S
             
             R = self-Q*P
             
@@ -471,7 +513,19 @@ class pol:
             return(False)
     
 def gcd(a, b) :
-    
+    """
+    Calcul du pgcd de a et b, non normalisé !
+
+    Parameters
+    ----------
+    x : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
              
     while (b.deg >= 0) :
         
@@ -485,6 +539,21 @@ def gcd(a, b) :
 
 
 def bezout(a, b) :
+    """
+    Calcul une décomposition de Bézout normalisée de a et b
+
+    Parameters
+    ----------
+    a : TYPE
+        DESCRIPTION.
+    b : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
     u0, u1, v0, v1 = pol([1], a.field), pol([0], a.field), pol([0], a.field), pol([1], a.field)
 
     while (b.deg >= 0) :
@@ -517,7 +586,7 @@ def bezout(a, b) :
 
 
 if __name__ == '__main__' : 
-    field = FF.field(5, 4)
+    field = finite_field.field(5, 4)
     
     X = pol([0, 1], field)
     

@@ -6,10 +6,10 @@ Created on Fri Sep  8 10:19:30 2023
 @author: maugeais
 """
 
-import FF
-import polGF
+from . import finite_field
+from . import polynomials_finite_field
 import numpy as np
-import cc
+from . import error_control
 
 
 def traceMatrix(H) :
@@ -57,11 +57,11 @@ class goppa :
         if (n-t*m <= 0) :
             raise Exception("La dimension doit être positive")
             
-        self.F = FF.field(2, m)
+        self.F = finite_field.field(2, m)
         
         # Tirace de n éléments SANS remise
         self.L = np.random.choice(self.F.elements(), n, replace = False)
-        self.X = polGF.pol([0, 1], self.F)
+        self.X = polynomials_finite_field.pol([0, 1], self.F)
         self.t = t
         
         self.dimCode = n-t*m
@@ -69,7 +69,7 @@ class goppa :
         self.length = n
 
         if pol != None :
-            self.g = polGF.pol(pol, self.F)
+            self.g = polynomials_finite_field.pol(pol, self.F)
         else :
             # Trouve un polynôme unitaire qui ne s'annule sur aucun des elements
             P = self.X**t
@@ -83,7 +83,7 @@ class goppa :
                 # if P.isIrred :
                 #     break
                 # dP = P.der()
-                # Q = polGF.gcd(P, dP)
+                # Q = polynomials_finite_field.gcd(P, dP)
                 
                 # vals = [P(gamma) == 0 for gamma in self.L]   
                 # print("Q irred", P.isIrred())
@@ -101,13 +101,13 @@ class goppa :
         
         self.H = traceMatrix(self.Hf)
         
-        A, B = cc.inv(self.H.T)
+        A, B = error_control.inv(self.H.T)
         
         # Matrice génératrice
         
         self.G = B.T
         
-        # print("Distance de Hamming", cc.d_ham(np.matrix(self.G)))
+        # print("Distance de Hamming", error_control.d_ham(np.matrix(self.G)))
         
     def __repr__(self) :
         s  = "Code de goppa \n"
@@ -121,14 +121,14 @@ class goppa :
         
         
         
-    def _vector2field(self, x) :
-        
-        if (len(x) != self.dimCode*self.F.card//2) :
-            print("problem de dimension: len(x) = ", self.dimCode*self.F.card//2)
-         
-        res = [FF.GF(x[i*self.F.dim:(i+1)*self.F.dim], self.F) for i in range(len(x)//self.F.dim)]
-        
-        return(res)
+#     def _vector2field(self, x) :
+#
+#         if (len(x) != self.dimCode*self.F.card//2) :
+#             print("problem de dimension: len(x) = ", self.dimCode*self.F.card//2)
+#
+#         res = [prime_field.GF(x[i*self.F.dim:(i+1)*self.F.dim], self.F) for i in range(len(x)//self.F.dim)]
+#
+#         return(res)
     
     def _syndrome(self, Y) :
         """
@@ -150,7 +150,7 @@ class goppa :
         for i, gamma in enumerate(self.L) :
             
             if Y[i] != 0 :
-                _, Q, _ = polGF.bezout(self.X-gamma, self.g)
+                _, Q, _ = polynomials_finite_field.bezout(self.X-gamma, self.g)
 
                 s += Q
                 
@@ -177,12 +177,12 @@ class goppa :
             return(Y)
         
                      
-        _, sm1, _ =  polGF.bezout(s, self.g)
+        _, sm1, _ =  polynomials_finite_field.bezout(s, self.g)
         
         sqrt = sqrtModg(sm1-self.X, self.g)
         
-        a, b = LBR((sqrt, polGF.pol([1], self.F)), 
-                    (self.g, polGF.pol([0], self.F)), length = lambda x : (x[0]**2+self.X*x[1]**2).deg)
+        a, b = LBR((sqrt, polynomials_finite_field.pol([1], self.F)),
+                    (self.g, polynomials_finite_field.pol([0], self.F)), length = lambda x : (x[0]**2+self.X*x[1]**2).deg)
                         
         p = (a**2+self.X*b**2) 
         
@@ -290,7 +290,7 @@ def testGoppaStandard(G) :
     
     print(c, cp)
     
-def test() :
+def test(G) :
 
     # # Création d'un vecteur 
     m = np.random.randint(0, 2, G.G.shape[1])
@@ -315,5 +315,5 @@ if __name__ == "__main__" :
     print(G)
     
     
-    test()
+    test(G)
     

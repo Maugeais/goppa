@@ -6,7 +6,7 @@ Created on Thu Sep  7 09:43:16 2023
 @author: maugeais
 """
 
-import FF
+from goppa import FF
 
 F = FF.field(5**5, 5)
 alpha = F.var
