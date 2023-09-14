@@ -440,17 +440,3 @@ class GF:
          return(self.F.card-1)
          
         
-if __name__ == '__main__' : 
-
-    
-    F = field(3, 5)
-    alpha = F.var
-    P = (2+alpha+2*alpha**3+1*alpha**4)
-    
-    Q = 1/P
-    print('(1/P)*P = ', Q*P)
-    
-    # beta = alpha
-    # for i in range(1, F.card) :
-    #     print(i, beta)
-    #     beta = beta*alpha

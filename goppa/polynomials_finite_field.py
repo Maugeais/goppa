@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Sep  7 12:15:04 2023
-
-@author: maugeais
-"""
-
 from . import finite_field
 import numpy as np
 import sympy
@@ -585,25 +577,4 @@ def bezout(a, b) :
     return(a, u0, v0)
 
 
-if __name__ == '__main__' : 
-    field = finite_field.field(5, 4)
-    
-    X = pol([0, 1], field)
-    
-    alpha = field.var
-    
-    P = (1+(1+alpha)*X+1*X**3+1*X**7)
-    
-    Q = (1+X+alpha*X**2)
-    
-    # print(P+P+3*P)
-    
-    # print(P-1*Q**4)
-    
-    A, B = P / Q
-    print("P-(A*Q+B) = ", P-(A*Q+B))
-    
-    a, u, v = bezout(P, Q)
-    print(a, '=', u*P+v*Q)
-    
-    print(Q.isIrred())
+

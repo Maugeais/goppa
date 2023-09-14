@@ -569,26 +569,4 @@ def bezout(a, b) :
         
     return(a, u0, v0)
 
-if __name__ == '__main__' : 
-
-    X = polZnZ([0, 1], car = 2)
-    
-    P = (2+X+3*X**3+2*X**8)
-    P = 1+X+X**2
-    
-    # Q = (1+X+3*X**2)
-    
-    # print(P+P+3*P)
-    
-    # print(P-2*Q**4)
-    
-    # A, B = P / Q
-    
-    # print(P-(A*Q+B))
-    
-    # a, u, v = bezout(P, Q)
-    # print(a, '=', u*P+v*Q)
-    
-    
-    print(P.isIrred())
     

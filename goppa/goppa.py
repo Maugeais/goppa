@@ -64,14 +64,13 @@ class goppa :
         self.X = polynomials_finite_field.pol([0, 1], self.F)
         self.t = t
         
-        self.dimCode = n-t*m
-        self.dimSyndrome = t*m
+        self.k = n-t*m
         self.length = n
 
         if pol != None :
             self.g = polynomials_finite_field.pol(pol, self.F)
         else :
-            # Trouve un polynôme unitaire qui ne s'annule sur aucun des elements
+            # Find random irreducible polynomial of degree t
             P = self.X**t
                     
             while not P.isIrred() :
@@ -79,18 +78,6 @@ class goppa :
                 for j in range(t) :
                     P.coef[j] = self.F.rand()
                                         
-                
-                # if P.isIrred :
-                #     break
-                # dP = P.der()
-                # Q = polynomials_finite_field.gcd(P, dP)
-                
-                # vals = [P(gamma) == 0 for gamma in self.L]   
-                # print("Q irred", P.isIrred())
-
-                # # Si le polynôme n'a pas de racines multiples
-                # if Q.deg == 0 and not any(vals):        
-                #     break
                 
             self.g = P
         
@@ -101,11 +88,13 @@ class goppa :
         
         self.H = traceMatrix(self.Hf)
         
-        A, B = error_control.inv(self.H.T)
+        _, B = error_control.inv(self.H.T)
         
-        # Matrice génératrice
-        
+        # Generator matrix
         self.G = B.T
+        
+        # Decoding matrix
+        self.D, _ = error_control.inv(self.G)
         
         # print("Distance de Hamming", error_control.d_ham(np.matrix(self.G)))
         
@@ -113,9 +102,9 @@ class goppa :
         s  = "Code de goppa \n"
         s += "   Corps GF({})\n".format(self.F.card)
         s += "   polynôme : {}\n".format(self.g)
-        s += "   dimension : {}\n".format(self.dimCode)
+        s += "   dimension : {}\n".format(self.k)
         s += "   correction : {}\n".format(self.g.deg)
-        s += "   type : ({}, {}, {})\n".format(self.length, self.dimCode, self.g.deg)
+        s += "   type : ({}, {}, {})\n".format(self.length, self.k, self.g.deg)
         
         return(s)
         
@@ -123,8 +112,8 @@ class goppa :
         
 #     def _vector2field(self, x) :
 #
-#         if (len(x) != self.dimCode*self.F.card//2) :
-#             print("problem de dimension: len(x) = ", self.dimCode*self.F.card//2)
+#         if (len(x) != self.k*self.F.card//2) :
+#             print("problem de dimension: len(x) = ", self.k*self.F.card//2)
 #
 #         res = [prime_field.GF(x[i*self.F.dim:(i+1)*self.F.dim], self.F) for i in range(len(x)//self.F.dim)]
 #
@@ -195,9 +184,9 @@ class goppa :
          
     def decode(self, s) :         
                 
-        e = G._patterson(s)
+        e = self._patterson(s)
         
-        return(e)
+        return(self.D.dot(e) % 2)
         
         
         
