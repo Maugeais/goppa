@@ -204,58 +204,24 @@ class code :
     
 
 def ballSize(ell, d) :
+    """
+    Compute the size of the syndrom table
+
+    Parameters
+    ----------
+    ell : int
+        length of teh code
+    d : int
+        hammming distance of the code
+
+    Returns
+    -------
+    None.
+
+    """
     
     t = (d-1)//2
     
     return(int(sum([arithmetic_tools.comb(ell, tp) for tp in range(0, t+1)])))
             
-        
-# trouve une matrice de taille ell, n avec une distance hamming d, maximum N étape        
-def findMat(ell, n, d, N=100) :
-    
-    i = 0
-    
-    while (i < N) :
-        
-        G = np.matrix(np.random.randint(0, 2, (ell, n)))
-        
-        dt = d_ham(G)
-                
-        if dt == d :
-            return(G)
-        
-        i += 1
-        
-    return(None)
-        
-    
-# Test si le type d'un codez est parfait    
-def isPerfect(ell, n, d) :
-    
-    return(2**ell == ballSize(ell, d)*2**n)
-
-# Pour une capacité de correction donnée, cherche les longueur potentielle des codes parfaits
-def potentialPerfect(t, L = 100) :
-    ell = np.arange(0, L, dtype= int)
-    
-    if t == 1 :
-    
-        a = 1+ell
-        
-    elif t == 2 :
-        a = 1+ell+ell*(ell-1)//2
-        
-    elif t == 3 :
-        a = a = 1+ell+ell*(ell-1)//2 + ell*(ell-1)*(ell-2)//6
-    
-    b = 2**(np.array((np.floor(np.log2(a))), dtype=int))
-    
-    res = np.where(a==b)[0]
-
-    
-    n = ell[res]-np.log2(a[res]).astype(int)
-    
-    
-    return(res, n)
-    
         
