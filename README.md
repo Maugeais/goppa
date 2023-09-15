@@ -10,7 +10,6 @@ It is thought to be as self contained as possible, and contains libraries that h
 
 * Python
 * numpy
-* sympy (temporary, shoud be removed in the future)
 
 ### Dependencies therefore
 
@@ -24,10 +23,6 @@ The library goppa needs is built on modules detailed in the following graph. Eac
                           │                                    │
                           │                                    │
               polynomials_finite_field.py                    error_control
-                          │
-                          │
-                          │
-              polynomials_finite_field.py
                           │
                           │
                           │

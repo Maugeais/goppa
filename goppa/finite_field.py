@@ -8,7 +8,6 @@ Created on Wed Sep  6 13:12:08 2023
 
 from .polynomials_prime_field import polZnZ, gcd, bezout
 import numpy as np
-import sympy
     
     
 class field:
@@ -43,7 +42,7 @@ class field:
         self.dim = n
         
         self.varName = varName
-        self.__divisors = []
+        
 
         if pol != None :
             
@@ -102,14 +101,6 @@ class field:
             
         return(_elements)
     
-    def _divisors(self) :
-        
-        
-        if len(self.__divisors) == 0 :
-            
-            self.__divisors = sympy.divisors(self.card-1)
-            # print('toto')
-        return(self.__divisors)
 
         
 class GF:
@@ -418,25 +409,5 @@ class GF:
          
          return not self.__eq__(P)
      
-     def order(self):
-         """
-         Compute the order of the current element
-
-         Returns
-         -------
-         int
-
-         """
-         
-         if (self == 0) :
-             raise Exception("0 n'a pas d'ordre")
-         
-         for n in self.F._divisors()[0:-1] :
-             x = self**n
-
-             if self**n == 1 :
-                 return(n)
-             
-         return(self.F.card-1)
-         
+    
         

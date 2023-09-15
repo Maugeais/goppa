@@ -1,5 +1,6 @@
 import numpy as np
-import scipy
+from . import arithmetic_tools
+
 
 def inv(A):
     """
@@ -204,9 +205,9 @@ class code :
 
 def ballSize(ell, d) :
     
-    t = np.floor((d-1)/2)
+    t = (d-1)//2
     
-    return(int(sum(scipy.special.comb(ell, np.arange(0, t+1)))))
+    return(int(sum([arithmetic_tools.comb(ell, tp) for tp in range(0, t+1)])))
             
         
 # trouve une matrice de taille ell, n avec une distance hamming d, maximum N étape        

@@ -1,6 +1,6 @@
 from . import finite_field
 import numpy as np
-import sympy
+from . import arithmetic_tools
 
 
 class pol:
@@ -485,7 +485,7 @@ class pol:
         None.
 
         """
-        N = sympy.primefactors(self.deg)
+        N = arithmetic_tools.prime_divisors(self.deg)
         X = pol([0, 1], self.field)
         
         for n in N :

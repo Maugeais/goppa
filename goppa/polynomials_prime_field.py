@@ -7,7 +7,7 @@ Created on Fri Sep  8 08:08:05 2023
 """
 
 import numpy as np
-import sympy
+from . import arithmetic_tools
 
 class polZnZ:
     def __init__(self, coef, car = 2):
@@ -303,7 +303,7 @@ class polZnZ:
         while R.deg >= P.deg :
                         
             # Calcule l'inverse de B.coef[-1]
-            _, u, v = bezoutint(P.coef[-1], self.car)
+            _, u, v = arithmetic_tools.bezout(P.coef[-1], self.car)
             
             if R.deg > P.deg :
                 S = np.zeros(R.deg-P.deg+1, dtype = int)
@@ -448,7 +448,7 @@ class polZnZ:
             DESCRIPTION.
 
         """
-        N = sympy.primefactors(self.deg)
+        N = arithmetic_tools.prime_divisors(self.deg)
         X = polZnZ([0, 1], self.car)
         
         for n in N :
@@ -494,36 +494,6 @@ def gcd(a, b) :
         
     return(a)
 
-def bezoutint(a, b) :
-    """
-    
-
-    Parameters
-    ----------
-    a : TYPE
-        DESCRIPTION.
-    b : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
-    u0, u1, v0, v1 = 1, 0, 0, 1
-    
-    while (b != 0) :
-        
-        q = a//b
-        r = a % b
-        
-        a = b
-        b = r
-        
-        u0, u1 = u1, u0-u1*q
-        v0, v1 = v1, v0-v1*q
-        
-    return(a, u0, v0)
 
 def bezout(a, b) :
     """
@@ -556,7 +526,7 @@ def bezout(a, b) :
     # Et on normalise pour avoir un pgcd unitaire
     if a.deg >= 0 :
         
-        _, r, s = bezoutint(a.coef[-1], a.car)   
+        _, r, s = arithmetic_tools.bezout(a.coef[-1], a.car)   
                 
         for i in range(u0.deg+1) :
             u0.coef[i] = (u0.coef[i]*r)%a.car
