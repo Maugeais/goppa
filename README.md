@@ -46,7 +46,7 @@ The library goppa is built on modules detailed in the following graph. Each one 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-The following example generates a binary goppa code of type (), a code and an error vector, and decodes it with the Patterson algorithm
+The following example generates a binary goppa code of type (2048, 1952, 17), a code and an error vector, and decodes it with the Patterson algorithm
 
 ```
     from goppa import goppa
