@@ -28,20 +28,20 @@ def traceMatrix(H) :
     return(Hp)
 
 class goppa :
-    def __init__(self, m, t, n, pol = None) :
+    def __init__(self, m, t, n, verbose = False, seed = 0) :
         """
         Initialisation de la classe goppa
 
         Parameters
         ----------
-        m : int
+        m : int or finie_field.field
             the base field is GF(2**m)
         t : int
             degree of the polynomial
+        t : polynomials_finite_field.pol
+            polynomial defining the goppa code
         n : int
             number of points in the list L
-        pol : TYPE, optional
-            DESCRIPTION. The default is None.
 
         Raises
         ------
@@ -53,45 +53,64 @@ class goppa :
         None.
 
         """
-                 
-        if (n-t*m <= 0) :
-            raise Exception("The dimension must be positive")
-            
-        self.F = finite_field.field(2, m)
         
-        # Tirace de n éléments SANS remise
+        if isinstance(m, int) :
+            if verbose :
+                print("Generation of the finite field...")
+            self.F = finite_field.field(2, m, seed = seed)
+            
+        elif isinstance(m, finite_field.field) :
+            self.F = m
+            m = int(np.log(self.F.card)/np.log(self.F.car))
+
+
+        # Random subset of cardinality n of all the elements of self.F 
         self.L = np.random.choice(self.F.elements(), n, replace = False)
         self.X = polynomials_finite_field.pol([0, 1], self.F)
-        self.t = t
         
-        self.k = n-t*m
         self.length = n
+        
+        if isinstance(t, polynomials_finite_field.pol) :
 
-        if pol != None :
-            self.g = polynomials_finite_field.pol(pol, self.F)
+            self.g = t 
+
+            
         else :
             # Find random irreducible polynomial of degree t
-            P = self.X**t
+
+            if verbose :
+                print("Generation of the irreducible polynomial...")
+
+
+            self.g = polynomials_finite_field.genIrred(self.F, t, verbose = verbose, seed = seed)
                     
-            while not P.isIrred() :
-                            
-                for j in range(t) :
-                    P.coef[j] = self.F.rand()
-                                        
-                
-            self.g = P
+            
+        self.t = self.g.deg        
+        self.k = self.length-self.g.deg*self.F.dim
+        
+        if (self.k <= 0) :
+            raise Exception("The dimension must be positive")
+            
+        if verbose :
+            print("Generation of the parity check matrix...")
         
         h = [1/self.g(gamma) for gamma in self.L]
                 
                             
-        self.Hf = np.array([[h[i]*self.L[i]**j for i in range(n)] for j in range(t)])
+        self.Hf = np.array([[h[i]*self.L[i]**j for i in range(n)] for j in range(self.t)])
         
         self.H = traceMatrix(self.Hf)
+
+        if verbose :
+            print("Generation of the generator matrix...")
         
         _, B = error_control.inv(self.H.T)
         
         # Generator matrix
         self.G = B.T
+
+        if verbose :
+            print("Generation of the decoding matrix...")
         
         # Decoding matrix
         self.D, _ = error_control.inv(self.G)
@@ -108,16 +127,6 @@ class goppa :
         
         return(s)
         
-        
-        
-#     def _vector2field(self, x) :
-#
-#         if (len(x) != self.k*self.F.card//2) :
-#             print("problem de dimension: len(x) = ", self.k*self.F.card//2)
-#
-#         res = [prime_field.GF(x[i*self.F.dim:(i+1)*self.F.dim], self.F) for i in range(len(x)//self.F.dim)]
-#
-#         return(res)
     
     def _syndrome(self, Y) :
         """

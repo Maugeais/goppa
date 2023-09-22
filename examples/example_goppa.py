@@ -10,10 +10,10 @@ print("Generation of the binary Goppa code...")
 
 
 t0 = time.time()
-G = goppa.goppa(7, 8, 2**6)
-# G = goppa.goppa(5, 4, 2**5)
+# G = goppa.goppa(7, 8, 2**6, verbose = True)
+# G = goppa.goppa(5, 4, 2**5, verbose  =True)
 
-# G = goppa.goppa(10, 8, 2**10)
+G = goppa.goppa(12, 8, 2**11, verbose = True)
 
 print(G)
 print("Generation time : {:.2f}s".format(time.time()-t0))

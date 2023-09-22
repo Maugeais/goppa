@@ -7,7 +7,8 @@ sys.path.insert(0, '..')
 
 from goppa import finite_field, polynomials_finite_field
 
-field = finite_field.field(5, 4)
+field = finite_field.field(2, 2)
+
 
 X = polynomials_finite_field.pol([0, 1], field)
 

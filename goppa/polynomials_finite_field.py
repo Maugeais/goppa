@@ -1,6 +1,7 @@
 from . import finite_field
 import numpy as np
 from . import arithmetic_tools
+import time 
 
 
 class pol:
@@ -46,7 +47,7 @@ class pol:
             self.deg = -1
             self.coef = np.array([finite_field.GF(0, field)])
         else :
-            self.deg=I[-1]
+            self.deg = int(I[-1])
             self.coef = self.coef[:self.deg+1]
         
 
@@ -219,8 +220,25 @@ class pol:
                 Q[i] *= P
             return(pol(Q, self.field))
         
-        if self.deg + P.deg < 0 :
+        if (self.deg < 0) or (P.deg < 0) :
             return(pol([0], self.field))
+        
+        # If P is a monommial
+        if len(np.where(P.coef != 0)[0]) == 1 :
+            Q = np.zeros(self.deg+P.deg+1, dtype = finite_field.GF)
+                        
+            Q[P.deg:] = (P.coef[-1]*self.coef) 
+            return(pol(Q, self.field))
+        
+        # If self a monommial
+        if len(np.where(self.coef != 0)[0]) == 1 :
+            Q = np.zeros(self.deg+P.deg+1, dtype = finite_field.GF)
+            
+            Q[self.deg:] = (P.coef*self.coef[-1]) 
+            return(pol(Q, self.field))
+        
+        
+        
         Q = np.zeros(self.deg+P.deg+1, dtype = finite_field.GF)
         
         for i in range(self.deg+1) :
@@ -318,9 +336,9 @@ class pol:
             else :
                 S = pol([R.coef[-1]*u], self.field)
                 
-            Q = Q + S
+            Q += S
             
-            R = self-Q*P
+            R -= S*P
             
         return(Q, R)
     
@@ -446,6 +464,8 @@ class pol:
                 z.append(i)
                 
         return(z)
+
+        
     
     def powMod(self, n, g) :
         """
@@ -461,6 +481,7 @@ class pol:
         None.
 
         """
+        
         if n == 0 :
             return(pol([1], self.field))
         
@@ -485,24 +506,26 @@ class pol:
         None.
 
         """
+        
         N = arithmetic_tools.prime_divisors(self.deg)
         X = pol([0, 1], self.field)
         
         for n in N :
-            
+                        
             h = X.powMod(self.field.card**(self.deg//n), self)-X
 
             if gcd(self, h).deg > 0 :
+                
                 return False
                 
-        g = X.powMod(self.field.card**(self.deg), self)-X
-
+        g = (X.powMod(self.field.card**(self.deg), self)-X)
         
         if (g % self).deg < 0 :
             return(True)
         
         else :
             return(False)
+        
     
 def gcd(a, b) :
     """
@@ -526,6 +549,12 @@ def gcd(a, b) :
         a = b
         b = r
         
+    if a.deg >= 0 :
+        
+        r = 1/a.coef[-1]
+    
+        for i in range(a.deg+1) :
+            a.coef[i] *= r
         
     return(a)
 
@@ -577,4 +606,25 @@ def bezout(a, b) :
     return(a, u0, v0)
 
 
+def genIrred(baseField, degree, verbose = False, seed = 0) :
 
+    X = pol([0, 1], baseField)
+    P = X**degree
+    
+    n = 0
+    
+    if seed != 0 :
+        np.random.seed((time.time_ns() + seed) % 2**32)
+                        
+    while not P.isIrred() :
+        
+                    
+        for j in range(degree) :
+            P.coef[j] = baseField.rand()
+            
+        n += 1
+        
+    if verbose : 
+        print("Number of trials = ", n)
+            
+    return(P)

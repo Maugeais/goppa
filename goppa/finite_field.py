@@ -6,12 +6,13 @@ Created on Wed Sep  6 13:12:08 2023
 @author: maugeais
 """
 
-from .polynomials_prime_field import polZnZ, gcd, bezout
+from .polynomials_prime_field import polZnZ, gcd, bezout, genIrred
 import numpy as np
+import time
     
     
 class field:
-    def __init__(self, car = 2, n = 4, pol = None, varName = 'α'):
+    def __init__(self, car = 2, n = 4, varName = 'α', seed = 0):
         """
         Definition of the field
 
@@ -19,13 +20,12 @@ class field:
         ----------
         car : int
             characteristic of the field
-        n : int, optional
+        n : int, or 
             degree as an extension over the prime field
             car**n is the cardinal of the field
-        pol : list of int or polZnZ, optional
-            - if given, irreducible polynomial of degre n defining
-            the field
-            - if not given, an irreducible polynomial of degree n is constructed
+        n : list of int, or polynomials_prime_field.polZnZ
+            defines a polynomial over Z/car Z
+            a test of irreducibility is performed
         varName : character, optional
             name of the generator of the field. The default is 'α'.
 
@@ -36,35 +36,36 @@ class field:
 
         """
         
-        self.card = car**n
-        self.car = car 
-        # Degré du polynôm générateur
-        self.dim = n
-        
+        self.car = car   
         self.varName = varName
         
-
-        if pol != None :
+        if isinstance(n, list) :
+            n = polZnZ(n, self.car)
+        
+        # If n is a polynomial
+        if isinstance(n, polZnZ) :
             
-                self.gen = polZnZ(pol, self.car)
+                self.gen = n 
                 self.var = GF([0, 1], self)
+                
+                self.dim = self.gen.deg
+                self.card = car**self.dim
+                
+                if not self.gen.isIrred() :
+                    raise Exception("The polynomial t is not irrecubible")
+                    
 
                 return              
-        
-        while True :
             
-            coef = np.random.randint(0, self.car, self.dim+1)
-            coef[0] = coef[-1] = 1
-            
-            P = polZnZ(coef, self.car)
-            
-            if P.isIrred() :
-                break
+        self.card = car**n
+        self.dim = n
+    
+        P = genIrred(self.car, self.dim, seed = seed)
         
         self.gen = P   
         self.var = GF([0, 1], self)
         
-    def rand(self) :
+    def rand(self, n = 1, seed = 0) :
         """
         Generate a random element of the current field
 
@@ -73,8 +74,13 @@ class field:
         Element of the current field
 
         """
-                
-        return(GF(np.random.randint(0, self.car, self.dim), self))
+        
+        if seed != 0 :
+            np.random.seed((time.time_ns() + seed) % 2**32)
+            
+        if n == 1 :
+            return(GF(np.random.randint(0, self.car, self.dim), self))
+        return([GF(np.random.randint(0, self.car, self.dim), self) for _ in range(n)])
     
     def elements(self) :
         """

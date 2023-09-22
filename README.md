@@ -1,10 +1,8 @@
 ## About The Project
 
-Implementation in Python of a complete liabrary handling binary goppa codes, from creation of the code to decoding. 
+Implementation in Python of a complete library handling binary goppa codes, from the creation of the code to decoding. 
 
-This project is developped for pedagogical purposes, emphasis is therefore made on readebility instead of speed.
-
-It is thought to be as self contained as possible, and contains libraries that handle finite fields, and polynomials over finite fields.
+This project is developped for pedagogical purposes, emphasis is therefore made on readability instead of speed. Moreover, it is designed to be as self contained as possible, and contains libraries that handle finite fields, and polynomials over finite fields.
 
 ### Built With
 
@@ -13,7 +11,7 @@ It is thought to be as self contained as possible, and contains libraries that h
 
 ### Dependencies therefore
 
-The library goppa needs is built on modules detailed in the following graph. Each one can be used on its own, and usage examples are given in the folder examples.
+The library goppa is built on modules detailed in the following graph. Each one can be used on its own, and usage examples are given in the examples folder.
 
                                          goppa.py
                                           │   │
@@ -48,13 +46,16 @@ The library goppa needs is built on modules detailed in the following graph. Eac
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+The following example generates a binary goppa code of type (), a code and an error vector, and decodes it with the Patterson algorithm
+
 ```
     from goppa import goppa
     
-    # Generation of the gopa code over the field GF(2**7), with L containing 2**6 elemnts 
-    # chosen randomly in GF(2**7) and an irreducible polynomial of degree 8
+    # Generation of the gopa code over the field GF(2**12), with L containing 2**11 elemnts 
+    # chosen randomly in GF(2**12) and an irreducible polynomial of degree 8
 
-    G = goppa.goppa(7, 8, 2**6)
+    G = goppa.goppa(12, 8, 2**11)
+
     
     # Creating a code and an error
     m = np.random.randint(0, 2, G.G.shape[1])
@@ -74,8 +75,8 @@ The library goppa needs is built on modules detailed in the following graph. Eac
 ## Roadmap
 
 - [ ] Adding full description of the modules
-- [ ] Optimising the code
-- [ ] Writting the documentation explainning teh theory
+- [ ] Implementing FFT arithmetic for multiplication of polynomials
+- [ ] Writting the documentation explainning the theory
 
 See the [open issues](https://github.com/Maugeais/goppa/issues) for a full list of proposed features (and known issues).
 

@@ -8,6 +8,7 @@ Created on Fri Sep  8 08:08:05 2023
 
 import numpy as np
 from . import arithmetic_tools
+import time
 
 class polZnZ:
     def __init__(self, coef, car = 2):
@@ -43,7 +44,7 @@ class polZnZ:
             self.deg = -1
             self.coef = np.array([0], dtype = int)
         else :
-            self.deg=I[-1]
+            self.deg = int(I[-1])
             self.coef = self.coef[:self.deg+1]
         
 
@@ -221,8 +222,25 @@ class polZnZ:
 
         """
         
-        if self.deg + P.deg < 0 :
+        
+        # If one of teh polynomials is 0
+        if (self.deg < 0) or (P.deg < 0) :
             return(polZnZ([0], self.car))
+        
+        # If P is a monommial
+        if len(np.where(P.coef != 0)[0]) == 1 :
+            Q = np.zeros(self.deg+P.deg+1, dtype = int)
+            
+            Q[P.deg:] = (P.coef[-1]*self.coef) % self.car
+            return(polZnZ(Q, self.car))
+        
+        # If self a monommial
+        if len(np.where(self.coef != 0)[0]) == 1 :
+            Q = np.zeros(self.deg+P.deg+1, dtype = int)
+            
+            Q[self.deg:] = (P.coef*self.coef[-1]) % self.car
+            return(polZnZ(Q, self.car))
+            
         Q = np.zeros(self.deg+P.deg+1, dtype = int)
         
         for i in range(self.deg+1) :
@@ -312,9 +330,9 @@ class polZnZ:
             else :
                 S = polZnZ([R.coef[-1]*u], self.car)
             
-            Q = Q + S
+            Q += S
         
-            R = self-Q*P
+            R -= S*P
  
         return(Q, R)
     
@@ -459,7 +477,7 @@ class polZnZ:
                 return False
                 
         g = X.powMod(self.car**(self.deg), self)-X
-    
+
         
         if (g % self).deg < 0 :
             return(True)
@@ -540,3 +558,25 @@ def bezout(a, b) :
     return(a, u0, v0)
 
     
+def genIrred(car, degree, verbose = False, seed = 0) :
+
+    X = polZnZ([0, 1], car)
+    P = X**degree
+    
+    n = 0
+    
+    if seed != 0 :
+        np.random.seed((time.time_ns() + seed) % 2**32)
+                                
+    while not P.isIrred() :
+        
+                    
+        coef = np.random.randint(0, car, degree)
+        P.coef[:-1] = coef
+            
+        n += 1
+        
+    if verbose : 
+        print("Number of trials = ", n)
+            
+    return(P)
